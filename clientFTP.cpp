@@ -121,8 +121,8 @@ void receberMensagem(){
     if (n < 0) 
         error("ERROR reading from c_socket");
     descontruirMensagem();
-    // cout << "recebendo mensagem" << endl;
-    // printVariaveis();
+    cout << "recebendo mensagem" << endl;
+    printVariaveis();
 }
 
 void enviarMensagem(){
@@ -130,8 +130,8 @@ void enviarMensagem(){
     construirMensagem();
     n = write(c_socket,buffer,strlen(buffer));
     if (n < 0) error("ERROR writing to c_socket");
-    // cout << "enviando mensagem" << endl;
-    // printVariaveis();
+    cout << "enviando mensagem" << endl;
+    printVariaveis();
 }
 
 void construirMensagemGET(){
@@ -166,8 +166,8 @@ void enviarMensagemGET(){
     int n;
     n = write(c_socket,buffer, 1412);
     if (n < 0) error("ERROR writing to socket");
-    // cout << "enviando mensagem" << endl;
-    // printVariaveis();
+    cout << "enviando mensagem" << endl;
+    printVariaveis();
 }
 
 bool open(string IP){
@@ -222,6 +222,7 @@ void comando(){
     }else if(command == "mkdir"){
         nm = "FM";
         enviarMensagem();
+        // receberMensagem();
     }else if(command == "get"){
         string dadosarquivo;
         FILE *file;

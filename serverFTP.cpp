@@ -24,8 +24,8 @@ using namespace std;
 
 #define nummaxconexao 4
 #define PORTA 30100
-#define RAIZ "/home/zarate//Documents/projetos/clientserverFTP/client-raiz/"
-#define RAIZ2 "/home/zarate/Documents/projetos/clientserverFTP/client-raiz/"
+#define RAIZ "/home/zarate/Documents/projetos/clientserverFTP/client-raiz/"
+#define RAIZ2 "/home/zarate//Documents/projetos/clientserverFTP/client-raiz/"
 
 typedef struct {
     int Clientsockfd;
@@ -121,8 +121,8 @@ void enviarMensagem(int socket, char buffer[], mensagem_t *mensagem){
     int n;
     n = write(socket,buffer, 1412);
     if (n < 0) error("ERROR writing to socket");
-    // cout << "enviando mensagem" << endl;
-    // printVariaveis(buffer, mensagem);
+    cout << "enviando mensagem" << endl;
+    printVariaveis(buffer, mensagem);
 }
 
 void receberMensagem(int socket, char buffer[], mensagem_t *mensagem){
@@ -130,8 +130,8 @@ void receberMensagem(int socket, char buffer[], mensagem_t *mensagem){
     n = read(socket,buffer, 1412);
     if (n < 0) error("ERROR reading from socket");
     descontruirMensagem(buffer, mensagem);
-    // cout << "recebendo mensagem" << endl;
-    // printVariaveis(buffer, mensagem);
+    cout << "recebendo mensagem" << endl;
+    printVariaveis(buffer, mensagem);
 }
 
 void functionArquivo(mensagem_t *mensagem){
@@ -187,8 +187,8 @@ void enviarMensagemGET(int socket, char buffer[], mensagem_t *mensagem){
     int n;
     n = write(socket,buffer, 1412);
     if (n < 0) error("ERROR writing to socket");
-    // cout << "enviando mensagem" << endl;
-    // printVariaveis(buffer, mensagem);
+    cout << "enviando mensagem" << endl;
+    printVariaveis(buffer, mensagem);
 }
 
 void functionGET(int socket, char buffer[], mensagem_t *mensagem){
@@ -196,15 +196,16 @@ void functionGET(int socket, char buffer[], mensagem_t *mensagem){
     FILE *file;
     char *ponteiro;
     char c;
-    char arquivo[mensagem->dados.length()];
-    strcpy(arquivo, mensagem->dados.c_str());
-    file = fopen(arquivo, "rb");
+    // char arquivo[mensagem->dados.length()];
+    // strcpy(arquivo, mensagem->dados.c_str());
+    string arquivo = mensagem->caminho + mensagem->dados;
+    file = fopen(arquivo.c_str(), "rb");
     if (file == NULL){
         mensagem->command = "error";
         enviarMensagem(socket, buffer, mensagem);
     }else{
         fclose(file);
-        file = fopen(arquivo, "rb");
+        file = fopen(arquivo.c_str(), "rb");
         enviarMensagem(socket, buffer, mensagem);
         limparStrings(mensagem);
         int j = 0;
@@ -243,8 +244,6 @@ void comando(int c_socket, char buffer[], mensagem_t *mensagem){
         functionArquivo(mensagem);
         enviarMensagem(c_socket, buffer, mensagem);
     }else if(mensagem->command == "cd"){
-        cout << "caminho: " << mensagem->caminho << endl;
-        cout << "mensagem: dados: " << mensagem->dados << endl;
         if((mensagem->dados == ".." || mensagem->dados == "../") && (mensagem->caminho == RAIZ || mensagem->caminho == RAIZ2)){
             mensagem->command = "erro";
             enviarMensagem(c_socket, buffer, mensagem);
@@ -270,26 +269,23 @@ void comando(int c_socket, char buffer[], mensagem_t *mensagem){
             }
         }
     }else if(mensagem->command == "ls"){
-        chdir(mensagem->caminho.c_str());
-        system("ls > temps.txt");
+        string temp = "ls " + mensagem->caminho + " > temps.txt";
+        system(temp.c_str());
         functionArquivo(mensagem);
         enviarMensagem(c_socket, buffer, mensagem);
     }else if(mensagem->command == "mkdir"){
-        chdir(mensagem->caminho.c_str());
-        string temp = mensagem->command + " " +mensagem->dados;
+        string temp = mensagem->command + " "+ mensagem->caminho + mensagem->dados;
         int n = system(temp.c_str());
-        if(n == 0){
-            mensagem->dados = "Diretorio criado";
-            enviarMensagem(c_socket, buffer, mensagem);
+        // if(n == 0){
+        //     mensagem->dados = "Diretorio criado";
+        //     enviarMensagem(c_socket, buffer, mensagem);
 
-        }
+        // }
     }else if(mensagem->command == "get"){
-        chdir(mensagem->caminho.c_str());
         functionGET(c_socket, buffer, mensagem);
     }else if(mensagem->command == "put"){
-        chdir(mensagem->caminho.c_str());
         FILE *file;
-        string arquivo = mensagem->dados;
+        string arquivo = mensagem->caminho + mensagem->dados;
         string dadosarquivo;
         file = fopen(arquivo.c_str(), "ab");
         if(file == NULL){
